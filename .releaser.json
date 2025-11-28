@@ -6,7 +6,7 @@
   "pull-request-header": "chore: release",
   "plugins": ["cargo-workspace"],
   "packages": {
-    ".": {
+    "core": {
       "component": "check-if-email-exists",
       "package-name": "check-if-email-exists"
     }
