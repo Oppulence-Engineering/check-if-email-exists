@@ -7,9 +7,10 @@
   "sequential-calls": true,
   "plugins": ["cargo-workspace"],
   "packages": {
-    "core": {
+    ".": {
       "component": "check-if-email-exists",
-      "package-name": "check-if-email-exists"
+      "package-name": "check-if-email-exists",
+      "path": "."
     }
   }
 }
