@@ -631,6 +631,14 @@ graph LR
 
 Many online services (https://hunter.io, https://verify-email.org, https://email-checker.net) offer this service for a paid fee. Here is an open-source alternative to those tools.
 
+### Roadmap Ideas / Nice-to-Haves
+
+- **Contact intelligence & enrichment** – augment verification output with titles, firmographics, technographic signals, and social intent data to rival Hunter.io, Apollo, or Fliar.
+- **Prospecting workflows** – support domain/person queries, bulk CSV enrich → verify → export loops, and configurable lead scoring to build campaign-ready lists.
+- **Deliverability toolkit** – scheduled re-verification, inbox warm-up scores, provider-aware retry heuristics, and spam-trap/DEA/honeypot risk modeling.
+- **Automation & integrations** – drag-and-drop workflow builder plus native Salesforce, HubSpot, Outreach, Salesloft, Pipedrive, Close, and webhook/GraphQL connectors.
+- **Compliance & auditability** – consent tracking, suppression list sync, retention policies, and immutable audit logs covering data collection + verification events.
+- **Collaboration & AI assistance** – shared workspaces, fine-grained permissions, and AI-generated persona summaries or icebreakers based on enriched data.
 ## License
 
 `check-if-email-exists`'s source code is provided under a **dual license model**.
