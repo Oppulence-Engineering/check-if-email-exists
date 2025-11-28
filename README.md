@@ -172,7 +172,7 @@ graph TB
         V1_CHECK[v1/check_email]
         V0_BULK[v0/bulk]
         V1_BULK[v1/bulk]
-        VERSION[/version]
+        VERSION[/version/]
     end
 
     subgraph "Worker System"
