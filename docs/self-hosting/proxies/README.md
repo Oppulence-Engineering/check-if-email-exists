@@ -47,3 +47,11 @@ The Helm charts in that repository contain verified settings for:
 - Dedicated IP rotation strategies
 - Username/password formatting for zone-based authentication
 
+
+## Known Issues
+
+### Bright Data Proxy Compatibility
+Bright Data "Super Proxy" endpoints (e.g., `brd.superproxy.io:33335`) may default to HTTP/1.1 CONNECT negotiation even when configured with SOCKS credentials, causing `Unsupported SOCKS version 72` errors (72 is ASCII "H" for HTTP). 
+
+**Workaround:** Ensure your Bright Data zone settings explicitly force SOCKS5, or use a port that guarantees SOCKS5 handling. The current backend strictly expects SOCKS5 compliance.
+
