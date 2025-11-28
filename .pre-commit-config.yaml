@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: helm-lint
+        name: Helm lint (chart sanity)
+        entry: bash -c "cd helm/check-if-email-exists && helm lint ."
+        language: system
+        pass_filenames: false
+

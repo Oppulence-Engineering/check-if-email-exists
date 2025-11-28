@@ -171,3 +171,7 @@ If you are creating an open-source application under a license compatible with t
 ## 🔨 Build From Source
 
 Build the [CLI from source](./cli/README.md#build-from-source) or the [HTTP backend from source](./backend/README.md#build-from-source).
+
+## Infrastructure & Hosting Notes
+
+- **RabbitMQ / Worker Queue** – The managed AMQP cluster is provisioned on [CloudAMQP](https://api.cloudamqp.com/console/75fa503d-fdf0-4d60-a1b0-9250e364c8cb/nodes) and exposed via an `amqps://` URI. All worker deployments (including Helm) source the `RCH__WORKER__RABBITMQ__URL` secret to connect to this hosted control plane. For access, see the CloudAMQP console referenced above.
