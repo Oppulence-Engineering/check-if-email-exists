@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "rust",
   "changelog-path": "CHANGELOG.md",
-  "include-component-in-tag": true,
+  "include-component-in-tag": false,
   "pull-request-header": "chore: release${scope} ${component} ${version}",
   "sequential-calls": true,
   "plugins": ["cargo-workspace"],
@@ -10,12 +10,14 @@
     "core": {
       "component": "core",
       "package-name": "check-if-email-exists",
-      "path": "core"
+      "path": "core",
+      "skip-github-release": true
     },
     "cli": {
       "component": "cli",
       "package-name": "check-if-email-exists-cli",
-      "path": "cli"
+      "path": "cli",
+      "skip-github-release": true
     },
     "backend": {
       "component": "backend",
@@ -25,7 +27,8 @@
     "sqs": {
       "component": "sqs",
       "package-name": "reacher_sqs",
-      "path": "sqs"
+      "path": "sqs",
+      "skip-github-release": true
     }
   }
 }
