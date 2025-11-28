@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "rust",
+  "changelog-path": "CHANGELOG.md",
+  "include-component-in-tag": false,
+  "pull-request-header": "chore: release",
+  "packages": {
+    ".": {
+      "component": "check-if-email-exists",
+      "package-name": "check-if-email-exists"
+    }
+  }
+}
+
