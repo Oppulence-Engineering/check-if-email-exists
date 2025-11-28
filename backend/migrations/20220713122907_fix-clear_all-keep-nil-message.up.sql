@@ -4,7 +4,7 @@ BEGIN
     WITH deleted_ids AS (
         DELETE FROM mq_msgs
         WHERE channel_name = ANY(channel_names)
-          AND id != uuid_nil()
+          AND id != public.uuid_nil()
         RETURNING id
     )
     DELETE FROM mq_payloads WHERE id IN (SELECT id FROM deleted_ids);
@@ -19,7 +19,7 @@ RETURNS VOID AS $$
 BEGIN
     WITH deleted_ids AS (
         DELETE FROM mq_msgs
-        WHERE id != uuid_nil()
+        WHERE id != public.uuid_nil()
         RETURNING id
     )
     DELETE FROM mq_payloads WHERE id IN (SELECT id FROM deleted_ids);
