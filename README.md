@@ -652,3 +652,71 @@ Build the [CLI from source](./cli/README.md#build-from-source) or the [HTTP back
 ## Infrastructure & Hosting Notes
 
 - **RabbitMQ / Worker Queue** – The managed AMQP cluster is provisioned on [CloudAMQP](https://api.cloudamqp.com/console/75fa503d-fdf0-4d60-a1b0-9250e364c8cb/nodes) and exposed via an `amqps://` URI. All worker deployments (including Helm) source the `RCH__WORKER__RABBITMQ__URL` secret to connect to this hosted control plane. For access, see the CloudAMQP console referenced above.
+
+## Local Development & Testing
+
+1. **Bootstrap dependencies**
+   - Install Docker Desktop (or Podman + docker-compose shim), Go 1.22+, Rust toolchain (if building the backend), Node 18+ (for docs / ancillary tooling) and Helm 3.
+   - Copy `.env.example` to `.env` and fill in SMTP proxy + auth secrets. These values are mounted into every container inside `rabbitmq/docker-compose.yaml`.
+2. **Bring up the full stack**
+   ```bash
+   make deploy-and-test
+   ```
+   The target launches Postgres, RabbitMQ and two worker instances, then executes `scripts/test_email.go` which hits both single-shot and bulk endpoints until the health probe passes.
+3. **Run ad-hoc checks**
+   - `cargo run --bin backend` for local-only iterations.
+   - `go run scripts/test_email.go` to revalidate after changing any API surface.
+4. **Inspect infrastructure**
+   - RabbitMQ UI: `http://localhost:15672` (guest/guest).
+   - Postgres: `postgres://postgres:postgres@localhost:5432/reacher_db`.
+
+## Configuration Reference
+
+| Key | Purpose | Default / Source |
+| --- | ------- | ---------------- |
+| `RCH__STORAGE__POSTGRES__DB_URL` | Primary Postgres connection string | `.env`, GitHub secret `HELM_POSTGRES_URL`, Helm `config.secretEnv` |
+| `RCH__WORKER__RABBITMQ__URL` | AMQP endpoint for worker queue | CloudAMQP URI, GitHub secret `HELM_RABBIT_URL` |
+| `RCH__PROXY__*` | Bright Data SOCKS5 endpoints (host/port/user/password) | `.env`, GitHub secrets |
+| `RCH__HELLO_NAME` / `RCH__FROM_EMAIL` | Values used during SMTP HELO / MAIL commands | `.env.example` |
+| `RCH__HEADER_SECRET` | Value required in `x-reacher-secret` header for authenticated API calls | GitHub secret `RCH__HEADER_SECRET` |
+| `RCH__SENTRY_DSN` | Observability hook for production deployments | GitHub secret `HELM_SENTRY_DSN` |
+
+Refer to `backend/backend_config.toml` for the canonical schema and to `docs/self-hosting/reacher-configuration-v0.10.md` for the full narrative explanation.
+
+## Proxy & Bright Data Integration
+
+- The backend currently expects a **pure SOCKS5** proxy. Bright Data’s dedicated residential zones support this; the unified superproxy endpoint defaults to HTTP CONNECT and is therefore incompatible. See `docs/self-hosting/proxies/README.md` for instructions and the reference Helm values from the [lead scraper service](https://github.com/Oppulence-Engineering/oppulence-paperless-backend/tree/master/services/lead-scraper-service).
+- Add the working proxy credentials to `.env` for local testing and mirror them into the GitHub Action secrets (`RCH__PROXY__HOST`, `RCH__PROXY__PORT`, etc.) so the Helm deployment inherits the same configuration via `values.yaml`.
+
+## Containerization & Compose Stack
+
+- `rabbitmq/docker-compose.yaml` defines a reproducible stack containing RabbitMQ, Postgres and two backend workers (mapped to `8080`/`8081`). Each worker reads from the same queue but advertises a unique `RCH__BACKEND_NAME` for logging clarity.
+- The compose file consumes `.env`, so sensitive material never lives inside version control. Update the file to point at `ghcr.io/oppulence-engineering/check-if-email-exists-backend:latest` once the image is published, or keep using `reacherhq/backend:beta` while upstream tags catch up.
+
+## CI/CD & Release Flow
+
+- **Docker build + Helm deploy**: `.github/workflows/deploy_backend.yml` builds the backend image with `docker/build-push-action`, pushes it to GHCR, then defers Helm deployment to the reusable workflow (`deploy-helm-direct-template.yml`). Tagging a release (`v*.*.*`) automatically publishes the image and rolls out the chart to the `paperless` namespace.
+- **CLI release pipeline**: `.github/workflows/deploy_cli.yml` builds the CLI binaries, signs them, and attaches artifacts to GitHub releases. Update this workflow when the CLI requires new targets or toolchains.
+- **Reusable Helm template**: `.github/workflows/deploy-helm-direct-template.yml` constructs kubeconfig material straight from GitHub secrets (`HELM_DIRECT_*`). Any service in the org can inherit it by pointing `uses:` to the template and passing chart metadata plus image overrides.
+
+## Helm Chart Overview
+
+- Located in `helm/check-if-email-exists`. Generated via `helm create` but extensively customized:
+  - `values.yaml` separates `config.env` (non-sensitive toggles) from `config.secretEnv` so secrets can be injected at deploy time.
+  - `templates/configmap-env.yaml` and `templates/secret-env.yaml` translate those maps into actual Kubernetes primitives that the `Deployment` consumes via `envFrom`.
+- Override values during deploys using `--set` or `-f` overlays. In CI we rely on `--set image.repository=…` and `--set config.secretEnv.*` arguments supplied by the workflow to keep the chart generic.
+
+## Observability & Alerting
+
+- Structured logs (JSON) are emitted by default; set `RUST_LOG=reacher=debug` when diagnosing gnarly SMTP issues.
+- Sentry is optional but strongly recommended in production. Populate `RCH__SENTRY_DSN` to capture panic-level crashes and SMTP edge cases.
+- RabbitMQ, Postgres and backend health endpoints are exposed at `/version` and `/healthz` (enable auth headers if the service is public).
+
+## Troubleshooting Checklist
+
+1. **DNS issues inside containers** – `docker exec worker1 nslookup gmail.com`. If this fails, set explicit DNS servers in `docker-compose.yaml` (`dns: ["8.8.8.8", "1.1.1.1"]`).
+2. **Proxy errors** – `"Unsupported SOCKS version 72"` means the proxy is speaking HTTP; switch to Bright Data’s SOCKS5 endpoint or another compatible provider.
+3. **SMTP failures for demo addresses** – Many demo domains lack MX records. Use a mailbox with real MX (e.g., `*@gmail.com`) when validating connectivity.
+4. **CI Helm failures** – Confirm every secret referenced in `deploy-helm-direct-template.yml` exists (`HELM_DIRECT_SERVER`, `HELM_DIRECT_CA_DATA`, etc.). The workflow now validates presence before writing kubeconfig.
+5. **Bulk jobs stuck in “Processing”** – Inspect RabbitMQ queue depth (`docker exec rabbitmq rabbitmqctl list_queues name messages_ready`) and ensure workers have network access to the proxy and databases.
+
