@@ -17,7 +17,7 @@
 //! Main entry point of the `reacher_backend` binary. It has two `main`
 //! functions, depending on whether the `bulk` feature is enabled or not.
 
-use check_if_email_exists::{setup_sentry, LOG_TARGET};
+use check_if_email_exists::{initialize_crypto_provider, setup_sentry, LOG_TARGET};
 use reacher_backend::config::load_config;
 use reacher_backend::http::run_warp_server;
 use reacher_backend::worker::run_worker;
@@ -31,6 +31,9 @@ const CARGO_PKG_VERSION: &str = env!("CARGO_PKG_VERSION");
 async fn main() -> Result<(), anyhow::Error> {
 	// Initialize logging.
 	tracing_subscriber::fmt::init();
+
+	// Initialize the crypto provider for TLS connections (required before any TLS usage).
+	initialize_crypto_provider();
 
 	info!(target: LOG_TARGET, version=?CARGO_PKG_VERSION, "Running Reacher");
 	let mut config = load_config().await?;
