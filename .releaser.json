@@ -7,10 +7,25 @@
   "sequential-calls": true,
   "plugins": ["cargo-workspace"],
   "packages": {
-    ".": {
-      "component": "check-if-email-exists",
+    "core": {
+      "component": "core",
       "package-name": "check-if-email-exists",
-      "path": "."
+      "path": "core"
+    },
+    "cli": {
+      "component": "cli",
+      "package-name": "check-if-email-exists-cli",
+      "path": "cli"
+    },
+    "backend": {
+      "component": "backend",
+      "package-name": "reacher_backend",
+      "path": "backend"
+    },
+    "sqs": {
+      "component": "sqs",
+      "package-name": "reacher_sqs",
+      "path": "sqs"
     }
   }
 }
