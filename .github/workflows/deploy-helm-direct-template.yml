@@ -1,0 +1,193 @@
+name: Deploy Helm Chart Directly
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: 'Name of the service to deploy (e.g., oppulence-unified-api)'
+        required: true
+        type: string
+      service_path:
+        description: 'Path to the service directory'
+        required: true
+        type: string
+      chart_repository:
+        description: 'Helm chart OCI repository URL (e.g., oci://ghcr.io/oppulence-engineering/oppulence-charts/charts/oppulence-production) or local path (e.g., ./charts/canvas)'
+        required: true
+        type: string
+      namespace:
+        description: 'Kubernetes namespace to deploy to'
+        required: true
+        type: string
+        default: 'oppulence'
+      create_namespace:
+        description: 'Whether to create the namespace if it does not exist'
+        required: false
+        type: boolean
+        default: true
+      version:
+        description: 'Version of the service to deploy'
+        required: false
+        type: string
+      values_file:
+        description: 'Path to values file overlay (e.g., charts/canvas/values-api.yaml)'
+        required: false
+        type: string
+      image_repository:
+        description: 'Override image repository (e.g., ghcr.io/oppulence-engineering/oppulence-canvas-api)'
+        required: false
+        type: string
+      image_tag:
+        description: 'Override image tag (e.g., sha-abc123)'
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      service_name:
+        description: 'Name of the service to deploy (e.g., oppulence-unified-api)'
+        required: true
+        type: string
+      service_path:
+        description: 'Path to the service directory'
+        required: true
+        type: string
+      chart_repository:
+        description: 'Helm chart OCI repository URL (e.g., oci://ghcr.io/oppulence-engineering/oppulence-charts/charts/oppulence-production) or local path (e.g., ./charts/canvas)'
+        required: true
+        type: string
+      namespace:
+        description: 'Kubernetes namespace to deploy to'
+        required: true
+        type: string
+        default: 'oppulence'
+      create_namespace:
+        description: 'Whether to create the namespace if it does not exist'
+        required: false
+        type: boolean
+        default: true
+      version:
+        description: 'Version of the service to deploy'
+        required: false
+        type: string
+      values_file:
+        description: 'Path to values file overlay (e.g., charts/canvas/values-api.yaml)'
+        required: false
+        type: string
+      image_repository:
+        description: 'Override image repository (e.g., ghcr.io/oppulence-engineering/oppulence-canvas-api)'
+        required: false
+        type: string
+      image_tag:
+        description: 'Override image tag (e.g., sha-abc123)'
+        required: false
+        type: string
+
+permissions:
+  contents: write # needed to write releases
+  id-token: write # needed for keyless signing
+  packages: write # needed for ghcr access
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Install Helm
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+      - name: Set up Kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Kubeconfig
+        env:
+          KUBE_SERVER: ${{ secrets.HELM_DIRECT_SERVER }}
+          KUBE_CA_DATA: ${{ secrets.HELM_DIRECT_CA_DATA }}
+          KUBE_CLIENT_CERT: ${{ secrets.HELM_DIRECT_CLIENT_CERT }}
+          KUBE_CLIENT_KEY: ${{ secrets.HELM_DIRECT_CLIENT_KEY }}
+        run: |
+          set -euo pipefail
+          for var in KUBE_SERVER KUBE_CA_DATA KUBE_CLIENT_CERT KUBE_CLIENT_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "Missing Kubernetes credential secret: ${var}"
+              exit 1
+            fi
+          done
+          mkdir -p "$HOME/.kube"
+          cat > "$HOME/.kube/config" <<EOL
+          apiVersion: v1
+          clusters:
+          - cluster:
+              certificate-authority-data: ${KUBE_CA_DATA}
+              server: ${KUBE_SERVER}
+            name: oppulence-infrastructure
+          contexts:
+          - context:
+              cluster: oppulence-infrastructure
+              user: oppulence-infrastructure
+            name: oppulence-infrastructure
+          current-context: oppulence-infrastructure
+          kind: Config
+          preferences: {}
+          users:
+          - name: oppulence-infrastructure
+            user:
+              client-certificate-data: ${KUBE_CLIENT_CERT}
+              client-key-data: ${KUBE_CLIENT_KEY}
+          EOL
+          chmod 600 $HOME/.kube/config
+
+      - name: Verify Kubernetes Connection
+        run: kubectl get nodes
+
+      - name: Deploy Helm Chart
+        run: |
+          NAMESPACE_FLAG="-n ${{ inputs.namespace }}"
+          CREATE_NAMESPACE_FLAG=""
+          VERSION_FLAG=""
+          VALUES_FLAG=""
+          IMAGE_REPO_FLAG=""
+          IMAGE_TAG_FLAG=""
+
+          if [ "${{ inputs.create_namespace }}" = "true" ]; then
+            CREATE_NAMESPACE_FLAG="--create-namespace"
+          fi
+
+          if [ -n "${{ inputs.version }}" ] && [ "${{ inputs.version }}" != "latest" ]; then
+            VERSION_FLAG="--version ${{ inputs.version }}"
+          fi
+
+          if [ -n "${{ inputs.values_file }}" ]; then
+            VALUES_FLAG="-f ${{ inputs.values_file }}"
+          fi
+
+          if [ -n "${{ inputs.image_repository }}" ]; then
+            IMAGE_REPO_FLAG="--set image.repository=${{ inputs.image_repository }}"
+          fi
+
+          if [ -n "${{ inputs.image_tag }}" ]; then
+            IMAGE_TAG_FLAG="--set image.tag=${{ inputs.image_tag }}"
+          fi
+
+          echo "Deploying ${{ inputs.service_name }} from: ${{ inputs.chart_repository }}"
+
+          helm upgrade --install ${{ inputs.service_name }} \
+            ${VERSION_FLAG} \
+            ${{ inputs.chart_repository }} \
+            ${VALUES_FLAG} \
+            ${IMAGE_REPO_FLAG} \
+            ${IMAGE_TAG_FLAG} \
+            ${NAMESPACE_FLAG} ${CREATE_NAMESPACE_FLAG} \
+            --wait
