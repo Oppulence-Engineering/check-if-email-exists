@@ -1,4 +1,12 @@
 ###############################################################################
+# Global tooling
+###############################################################################
+
+DOCKER_COMPOSE ?= docker-compose
+COMPOSE_FILE := $(CURDIR)/rabbitmq/docker-compose.yaml
+TEST_EMAIL_SCRIPT := ./scripts/test_email.go
+
+###############################################################################
 # Run
 ###############################################################################
 
@@ -19,6 +27,12 @@ run-with-worker: run
 .PHONY: run-with-commercial-license-trial
 run-with-commercial-license-trial: export RCH__COMMERCIAL_LICENSE_TRIAL__URL=http://localhost:3000/api/v1/commercial_license_trial
 run-with-commercial-license-trial: run
+
+# Bring up the full Docker Compose stack and run an end-to-end email verification.
+.PHONY: deploy-and-test
+deploy-and-test:
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d --build
+	go run $(TEST_EMAIL_SCRIPT)
 
 # Generate the changelog using the conventional-changelog tool.
 # As a hack, we delete all tags that are not beta tags, so that the changelog

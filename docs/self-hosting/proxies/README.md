@@ -36,3 +36,14 @@ For advanced usage, you can configure [multiple-proxies.md](multiple-proxies.md 
 Reacher has been working closely with [Proxy4Smtp](https://www.proxy4smtp.com) since early 2024. The service is run by Jon, an email verification expert who has had over 10 years experience in the industry. He understands the complications and challenges that arise from large scale SMTP connections. His proxies integrate seamlessly with Reacher, and are tailored for B2B emails.
 
 Ask [amaury@reacher.email](https://app.gitbook.com/u/F1LnsqPFtfUEGlcILLswbbp5cgk2 "mention") for an introduction to Jon.
+
+## Reference Configuration
+
+For production-grade proxy configurations (specifically for Bright Data), please refer to the **Lead Scraper Service** repository:
+`github.com/Oppulence-Engineering/oppulence-paperless-backend/services/lead-scraper-service`.
+
+The Helm charts in that repository contain verified settings for:
+- Bright Data Super Proxy endpoints (`brd.superproxy.io`)
+- Dedicated IP rotation strategies
+- Username/password formatting for zone-based authentication
+
