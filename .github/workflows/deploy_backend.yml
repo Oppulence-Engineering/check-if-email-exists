@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 # Publish backend image to GHCR so releases share a single source of truth.
 permissions:
