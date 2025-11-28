@@ -3095,7 +3095,7 @@ dependencies = [
 
 [[package]]
 name = "reacher_sqs"
-version = "1.0.0"
+version = "0.11.7"
 dependencies = [
  "check-if-email-exists",
  "lambda_runtime",
