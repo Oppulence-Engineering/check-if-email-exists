@@ -4,6 +4,7 @@
   "changelog-path": "CHANGELOG.md",
   "include-component-in-tag": false,
   "pull-request-header": "chore: release",
+  "sequential-calls": true,
   "plugins": ["cargo-workspace"],
   "packages": {
     "core": {
