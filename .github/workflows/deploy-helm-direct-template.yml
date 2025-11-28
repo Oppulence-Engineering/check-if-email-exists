@@ -41,6 +41,11 @@ on:
         description: 'Override image tag (e.g., sha-abc123)'
         required: false
         type: string
+      secret_env_overrides:
+        description: 'Optional newline-delimited KEY=VALUE pairs for config.secretEnv overrides'
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       service_name:
@@ -81,6 +86,11 @@ on:
         description: 'Override image tag (e.g., sha-abc123)'
         required: false
         type: string
+      secret_env_overrides:
+        description: 'Optional newline-delimited KEY=VALUE pairs for config.secretEnv overrides'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write # needed to write releases
@@ -153,6 +163,15 @@ jobs:
         run: kubectl get nodes
 
       - name: Deploy Helm Chart
+        env:
+          HELM_POSTGRES_URL: ${{ secrets.HELM_POSTGRES_URL }}
+          HELM_RABBIT_URL: ${{ secrets.HELM_RABBIT_URL }}
+          RCH__PROXY__HOST: ${{ secrets.RCH__PROXY__HOST }}
+          RCH__PROXY__PORT: ${{ secrets.RCH__PROXY__PORT }}
+          RCH__PROXY__USERNAME: ${{ secrets.RCH__PROXY__USERNAME }}
+          RCH__PROXY__PASSWORD: ${{ secrets.RCH__PROXY__PASSWORD }}
+          RCH__HEADER_SECRET: ${{ secrets.RCH__HEADER_SECRET }}
+          HELM_SENTRY_DSN: ${{ secrets.HELM_SENTRY_DSN }}
         run: |
           NAMESPACE_FLAG="-n ${{ inputs.namespace }}"
           CREATE_NAMESPACE_FLAG=""
@@ -181,6 +200,34 @@ jobs:
             IMAGE_TAG_FLAG="--set image.tag=${{ inputs.image_tag }}"
           fi
 
+          SECRET_ENV_OVERRIDES="${{ inputs.secret_env_overrides }}"
+          SECRET_ENV_FLAGS=()
+          if [ -n "$SECRET_ENV_OVERRIDES" ]; then
+            while IFS= read -r line; do
+              # Trim whitespace
+              trimmed="$(echo "$line" | xargs)"
+              [ -z "$trimmed" ] && continue
+              case "$trimmed" in
+                \#*) continue ;;
+              esac
+              key="${trimmed%%=*}"
+              value="${trimmed#*=}"
+              if [ -z "$key" ] || [ "$key" = "$trimmed" ]; then
+                echo "Invalid secret override line (expected KEY=VALUE): $line"
+                exit 1
+              fi
+              if [ "${value:0:1}" = "$" ]; then
+                env_name="${value:1}"
+                value="${!env_name:-}"
+              fi
+              if [ -z "$value" ]; then
+                echo "Secret override '$key' has an empty value."
+                exit 1
+              fi
+              SECRET_ENV_FLAGS+=(--set-string "config.secretEnv.${key}=${value}")
+            done <<<"$SECRET_ENV_OVERRIDES"
+          fi
+
           echo "Deploying ${{ inputs.service_name }} from: ${{ inputs.chart_repository }}"
 
           helm upgrade --install ${{ inputs.service_name }} \
@@ -189,5 +236,6 @@ jobs:
             ${VALUES_FLAG} \
             ${IMAGE_REPO_FLAG} \
             ${IMAGE_TAG_FLAG} \
+            "${SECRET_ENV_FLAGS[@]}" \
             ${NAMESPACE_FLAG} ${CREATE_NAMESPACE_FLAG} \
             --wait

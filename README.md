@@ -706,6 +706,7 @@ Refer to `backend/backend_config.toml` for the canonical schema and to `docs/sel
 - **Docker build + Helm deploy**: `.github/workflows/deploy_backend.yml` builds the backend image with `docker/build-push-action`, pushes it to GHCR, then defers Helm deployment to the reusable workflow (`deploy-helm-direct-template.yml`). Tagging a release (`v*.*.*`) automatically publishes the image and rolls out the chart to the `paperless` namespace.
 - **CLI release pipeline**: `.github/workflows/deploy_cli.yml` builds the CLI binaries, signs them, and attaches artifacts to GitHub releases. Update this workflow when the CLI requires new targets or toolchains.
 - **Reusable Helm template**: `.github/workflows/deploy-helm-direct-template.yml` constructs kubeconfig material straight from GitHub secrets (`HELM_DIRECT_*`). Any service in the org can inherit it by pointing `uses:` to the template and passing chart metadata plus image overrides.
+- **Secret overrides**: The same template now accepts newline-delimited `secret_env_overrides` so deployments inject `config.secretEnv.*` values (e.g., `RCH__PROXY__PORT`) straight from GitHub Secrets without duplicating scripts across repos.
 
 ## Helm Chart Overview
 

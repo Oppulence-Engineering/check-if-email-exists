@@ -72,4 +72,13 @@ jobs:
       create_namespace: true
       image_repository: ghcr.io/oppulence-engineering/check-if-email-exists-backend
       image_tag: ${{ needs.docker.outputs.image_tag }}
+      secret_env_overrides: |
+        RCH__STORAGE__POSTGRES__DB_URL=$HELM_POSTGRES_URL
+        RCH__WORKER__RABBITMQ__URL=$HELM_RABBIT_URL
+        RCH__PROXY__HOST=$RCH__PROXY__HOST
+        RCH__PROXY__PORT=$RCH__PROXY__PORT
+        RCH__PROXY__USERNAME=$RCH__PROXY__USERNAME
+        RCH__PROXY__PASSWORD=$RCH__PROXY__PASSWORD
+        RCH__HEADER_SECRET=$RCH__HEADER_SECRET
+        RCH__SENTRY_DSN=$HELM_SENTRY_DSN
     secrets: inherit
