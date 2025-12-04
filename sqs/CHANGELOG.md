@@ -1,5 +1,7 @@
 # Changelog
 
+## [3.0.1](https://github.com/Oppulence-Engineering/check-if-email-exists/compare/v3.0.0...v3.0.1) (2025-12-04)
+
 ## [3.0.0](https://github.com/Oppulence-Engineering/check-if-email-exists/compare/v2.0.0...v3.0.0) (2025-11-28)
 
 
