@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.1](https://github.com/Oppulence-Engineering/check-if-email-exists/compare/v3.0.0...v3.0.1) (2025-12-04)
+
+
+### Bug Fixes
+
+* initialize crypto provider at startup for TLS connections ([78e0461](https://github.com/Oppulence-Engineering/check-if-email-exists/commit/78e04614673ffb52582ac7c70b4fc3fbc508b3ef))
+* use schema-qualified public.uuid_nil() to fix PostgreSQL function inlining issue ([385ec52](https://github.com/Oppulence-Engineering/check-if-email-exists/commit/385ec52a6e1eac0eb1c360986905c478fe2cb725))
+
 ## [3.0.0](https://github.com/Oppulence-Engineering/check-if-email-exists/compare/v2.0.0...v3.0.0) (2025-11-28)
 
 
