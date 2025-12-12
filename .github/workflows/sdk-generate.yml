@@ -157,7 +157,7 @@ jobs:
   # Publish TypeScript SDK to npm
   publish-typescript:
     runs-on: ubuntu-latest
-    needs: commit-sdks
+    needs: [generate-typescript, generate-golang]
     if: github.event_name == 'release' || github.event.inputs.publish == 'true'
     permissions:
       contents: write
@@ -219,7 +219,7 @@ jobs:
   # Tag Go SDK for pkg.go.dev availability
   tag-golang:
     runs-on: ubuntu-latest
-    needs: commit-sdks
+    needs: [generate-typescript, generate-golang]
     if: github.event_name == 'release' || github.event.inputs.publish == 'true'
     permissions:
       contents: write
