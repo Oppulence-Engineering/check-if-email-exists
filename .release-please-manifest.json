@@ -3,7 +3,7 @@
   "cli": "3.0.0",
   "backend": "3.0.1",
   "sqs": "3.0.1",
-  "sdks/typescript": "3.0.1",
-  "sdks/golang": "3.0.1"
+  "sdks/typescript": "3.0.2",
+  "sdks/golang": "3.0.2"
 }
 
