@@ -1,0 +1,9 @@
+# Prevent overwriting custom files
+README.md
+package.json
+tsconfig.json
+tsconfig.build.json
+.npmignore
+.prettierrc
+CHANGELOG.md
+.github/**

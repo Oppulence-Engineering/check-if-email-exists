@@ -67,3 +67,58 @@ update-role-accounts:
 update-free-email-providers:
 # License is MIT.
 	curl https://raw.githubusercontent.com/ihmpavel/free-email-domains-list/refs/heads/master/data/data.txt -o core/src/misc/b2c.txt
+
+###############################################################################
+# SDK Generation
+###############################################################################
+
+OPENAPI_GENERATOR_VERSION ?= 7.14.0
+OPENAPI_SPEC := $(CURDIR)/backend/openapi.json
+SDK_DIR := $(CURDIR)/sdks
+
+.PHONY: sdk-install-generator
+sdk-install-generator:
+	@which openapi-generator-cli > /dev/null || npm install -g @openapitools/openapi-generator-cli
+	openapi-generator-cli version-manager set $(OPENAPI_GENERATOR_VERSION)
+
+.PHONY: sdk-generate-typescript
+sdk-generate-typescript: sdk-install-generator
+	openapi-generator-cli generate \
+		-i $(OPENAPI_SPEC) \
+		-g typescript-axios \
+		-o $(SDK_DIR)/typescript/src \
+		--additional-properties=npmName=@oppulence-engineering/reacher-sdk,supportsES6=true,withInterfaces=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=models,useSingleRequestParameter=true
+
+.PHONY: sdk-generate-golang
+sdk-generate-golang: sdk-install-generator
+	openapi-generator-cli generate \
+		-i $(OPENAPI_SPEC) \
+		-g go \
+		-o $(SDK_DIR)/golang \
+		--additional-properties=packageName=reacher,isGoSubmodule=true,generateInterfaces=true,structPrefix=true,enumClassPrefix=true \
+		--global-property=skipFormModel=false
+	rm -rf $(SDK_DIR)/golang/test
+	cd $(SDK_DIR)/golang && go mod tidy
+
+.PHONY: sdk-generate-all
+sdk-generate-all: sdk-generate-typescript sdk-generate-golang
+	@echo "SDKs generated successfully!"
+
+.PHONY: sdk-build-typescript
+sdk-build-typescript:
+	cd $(SDK_DIR)/typescript && npm install && npm run build
+
+.PHONY: sdk-test-typescript
+sdk-test-typescript:
+	cd $(SDK_DIR)/typescript && npm test
+
+.PHONY: sdk-test-golang
+sdk-test-golang:
+	cd $(SDK_DIR)/golang && go test ./...
+
+.PHONY: sdk-clean
+sdk-clean:
+	rm -rf $(SDK_DIR)/typescript/dist
+	rm -rf $(SDK_DIR)/typescript/node_modules
+	rm -rf $(SDK_DIR)/golang/docs
+	find $(SDK_DIR)/golang -name "*.go" ! -name "*_test.go" -delete

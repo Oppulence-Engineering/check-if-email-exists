@@ -13,3 +13,8 @@ hotmail.jpeg
 /test_suite/src/sensitive_fixtures/*.json
 run.sh
 .env
+
+# SDK build artifacts
+sdks/typescript/dist/
+sdks/typescript/node_modules/
+sdks/golang/*.test

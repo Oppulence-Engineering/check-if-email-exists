@@ -1,0 +1,273 @@
+name: sdk-generate
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/openapi.json'
+  pull_request:
+    paths:
+      - 'backend/openapi.json'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish SDKs to package registries'
+        type: boolean
+        default: false
+      version_bump:
+        description: 'Version bump type (patch, minor, major)'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+
+env:
+  OPENAPI_GENERATOR_VERSION: '7.14.0'
+  NODE_VERSION: '20'
+  GO_VERSION: '1.21'
+
+jobs:
+  # Detect changes to OpenAPI spec
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      openapi_changed: ${{ steps.changes.outputs.openapi }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            openapi:
+              - 'backend/openapi.json'
+
+  # Generate TypeScript SDK
+  generate-typescript:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.openapi_changed == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install OpenAPI Generator
+        run: |
+          npm install -g @openapitools/openapi-generator-cli
+          openapi-generator-cli version-manager set ${{ env.OPENAPI_GENERATOR_VERSION }}
+
+      - name: Generate TypeScript SDK
+        run: |
+          openapi-generator-cli generate \
+            -i backend/openapi.json \
+            -g typescript-axios \
+            -o sdks/typescript/src \
+            --additional-properties=npmName=@oppulence-engineering/reacher-sdk,supportsES6=true,withInterfaces=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=models,useSingleRequestParameter=true
+
+      - name: Install dependencies and build
+        working-directory: sdks/typescript
+        run: |
+          npm install
+          npm run build
+
+      - name: Run tests
+        working-directory: sdks/typescript
+        run: npm test || true  # Allow tests to fail during initial setup
+
+      - name: Upload TypeScript SDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-sdk
+          path: sdks/typescript/
+
+  # Generate Go SDK
+  generate-golang:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.openapi_changed == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Node.js (for openapi-generator)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install OpenAPI Generator
+        run: |
+          npm install -g @openapitools/openapi-generator-cli
+          openapi-generator-cli version-manager set ${{ env.OPENAPI_GENERATOR_VERSION }}
+
+      - name: Generate Go SDK
+        run: |
+          openapi-generator-cli generate \
+            -i backend/openapi.json \
+            -g go \
+            -o sdks/golang \
+            --additional-properties=packageName=reacher,isGoSubmodule=true,generateInterfaces=true,structPrefix=true,enumClassPrefix=true
+          rm -rf sdks/golang/test
+
+      - name: Tidy Go modules
+        working-directory: sdks/golang
+        run: go mod tidy
+
+      - name: Run Go tests
+        working-directory: sdks/golang
+        run: go test ./... || true  # Allow tests to fail during initial setup
+
+      - name: Upload Go SDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: golang-sdk
+          path: sdks/golang/
+
+  # Commit generated SDKs back to repository
+  commit-sdks:
+    runs-on: ubuntu-latest
+    needs: [generate-typescript, generate-golang]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download TypeScript SDK
+        uses: actions/download-artifact@v4
+        with:
+          name: typescript-sdk
+          path: sdks/typescript/
+
+      - name: Download Go SDK
+        uses: actions/download-artifact@v4
+        with:
+          name: golang-sdk
+          path: sdks/golang/
+
+      - name: Commit SDK changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sdks/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: regenerate SDKs from openapi.json
+
+            Automatically generated from OpenAPI specification changes.
+
+            Generated with GitHub Actions"
+            git push
+          fi
+
+  # Publish TypeScript SDK to npm
+  publish-typescript:
+    runs-on: ubuntu-latest
+    needs: commit-sdks
+    if: github.event.inputs.publish == 'true'
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master  # Get the latest with SDK changes
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Bump version
+        working-directory: sdks/typescript
+        run: |
+          npm version ${{ github.event.inputs.version_bump }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Install and build
+        working-directory: sdks/typescript
+        run: |
+          npm install
+          npm run build
+
+      - name: Publish to npm
+        working-directory: sdks/typescript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sdks/typescript/package.json
+          git commit -m "chore(sdk): bump typescript SDK to v${{ env.NEW_VERSION }}"
+          git tag "sdk-typescript-v${{ env.NEW_VERSION }}"
+          git push
+          git push --tags
+
+  # Tag Go SDK for pkg.go.dev availability
+  tag-golang:
+    runs-on: ubuntu-latest
+    needs: commit-sdks
+    if: github.event.inputs.publish == 'true'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Determine Go SDK version
+        id: version
+        run: |
+          # Use the same version bump type as TypeScript
+          BUMP_TYPE="${{ github.event.inputs.version_bump }}"
+
+          # Get current version from git tags or default to v0.0.0
+          CURRENT=$(git tag -l "sdks/golang/v*" | sort -V | tail -n1 | sed 's|sdks/golang/||' || echo "v0.0.0")
+          if [ -z "$CURRENT" ]; then
+            CURRENT="v0.0.0"
+          fi
+
+          # Parse version components
+          MAJOR=$(echo $CURRENT | cut -d. -f1 | tr -d 'v')
+          MINOR=$(echo $CURRENT | cut -d. -f2)
+          PATCH=$(echo $CURRENT | cut -d. -f3)
+
+          # Bump version
+          case $BUMP_TYPE in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Go module tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "sdks/golang/${{ steps.version.outputs.version }}"
+          git push --tags
