@@ -1,0 +1,10 @@
+# Prevent overwriting custom files
+README.md
+go.mod
+go.sum
+CHANGELOG.md
+.github/**
+
+# Don't generate test files (we'll write our own)
+*_test.go
+test/**

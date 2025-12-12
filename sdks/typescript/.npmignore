@@ -1,0 +1,23 @@
+# Source files (TypeScript)
+src/
+
+# Config files
+tsconfig.json
+tsconfig.build.json
+.eslintrc.js
+.prettierrc
+jest.config.js
+
+# OpenAPI Generator artifacts
+.openapi-generator/
+.openapi-generator-ignore
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+coverage/
+
+# Development
+node_modules/
+.env*
+*.log
