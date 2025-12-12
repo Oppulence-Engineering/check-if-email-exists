@@ -87,7 +87,7 @@ sdk-generate-typescript: sdk-install-generator
 		-i $(OPENAPI_SPEC) \
 		-g typescript-axios \
 		-o $(SDK_DIR)/typescript/src \
-		--additional-properties=npmName=@oppulence-engineering/reacher-sdk,supportsES6=true,withInterfaces=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=models,useSingleRequestParameter=true
+		--additional-properties=npmName=@oppulence/reacher-sdk,supportsES6=true,withInterfaces=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=models,useSingleRequestParameter=true
 
 .PHONY: sdk-generate-golang
 sdk-generate-golang: sdk-install-generator

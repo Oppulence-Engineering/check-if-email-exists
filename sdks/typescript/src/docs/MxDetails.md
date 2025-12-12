@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { MxDetails } from '@oppulence-engineering/reacher-sdk';
+import { MxDetails } from '@oppulence/reacher-sdk';
 
 const instance: MxDetails = {
     accepts_mail,

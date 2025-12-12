@@ -33,7 +33,7 @@
     "sdks/typescript": {
       "component": "sdk-typescript",
       "release-type": "node",
-      "package-name": "@oppulence-engineering/reacher-sdk",
+      "package-name": "@oppulence/reacher-sdk",
       "path": "sdks/typescript"
     },
     "sdks/golang": {

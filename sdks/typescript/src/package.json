@@ -1,7 +1,7 @@
 {
-  "name": "@oppulence-engineering/reacher-sdk",
+  "name": "@oppulence/reacher-sdk",
   "version": "0.11.0",
-  "description": "OpenAPI client for @oppulence-engineering/reacher-sdk",
+  "description": "OpenAPI client for @oppulence/reacher-sdk",
   "author": "OpenAPI-Generator Contributors",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
     "typescript",
     "openapi-client",
     "openapi-generator",
-    "@oppulence-engineering/reacher-sdk"
+    "@oppulence/reacher-sdk"
   ],
   "license": "Unlicense",
   "main": "./dist/index.js",

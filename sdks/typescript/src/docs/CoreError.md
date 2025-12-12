@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { CoreError } from '@oppulence-engineering/reacher-sdk';
+import { CoreError } from '@oppulence/reacher-sdk';
 
 const instance: CoreError = {
     type,

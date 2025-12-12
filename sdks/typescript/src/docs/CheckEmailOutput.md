@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { CheckEmailOutput } from '@oppulence-engineering/reacher-sdk';
+import { CheckEmailOutput } from '@oppulence/reacher-sdk';
 
 const instance: CheckEmailOutput = {
     input,

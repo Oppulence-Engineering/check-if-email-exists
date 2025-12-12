@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { PostV1Bulk200Response } from '@oppulence-engineering/reacher-sdk';
+import { PostV1Bulk200Response } from '@oppulence/reacher-sdk';
 
 const instance: PostV1Bulk200Response = {
     job_id,

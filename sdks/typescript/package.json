@@ -1,5 +1,5 @@
 {
-  "name": "@oppulence-engineering/reacher-sdk",
+  "name": "@oppulence/reacher-sdk",
   "version": "0.2.0",
   "description": "TypeScript SDK for Reacher Email Verification API",
   "main": "./dist/index.js",

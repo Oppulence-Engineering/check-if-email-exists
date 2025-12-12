@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { DebugDetailsSmtp } from '@oppulence-engineering/reacher-sdk';
+import { DebugDetailsSmtp } from '@oppulence/reacher-sdk';
 
 const instance: DebugDetailsSmtp = {
     verif_method,

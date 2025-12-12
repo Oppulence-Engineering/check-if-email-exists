@@ -21,7 +21,7 @@ Retrieve the progress of a bulk verification job.
 import {
     DefaultApi,
     Configuration
-} from '@oppulence-engineering/reacher-sdk';
+} from '@oppulence/reacher-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
@@ -72,7 +72,7 @@ Retrieve the results of a bulk verification job. This endpoint will return an er
 import {
     DefaultApi,
     Configuration
-} from '@oppulence-engineering/reacher-sdk';
+} from '@oppulence/reacher-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
@@ -130,7 +130,7 @@ import {
     DefaultApi,
     Configuration,
     CheckEmailRequest
-} from '@oppulence-engineering/reacher-sdk';
+} from '@oppulence/reacher-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
@@ -185,7 +185,7 @@ import {
     DefaultApi,
     Configuration,
     PostV1BulkRequest
-} from '@oppulence-engineering/reacher-sdk';
+} from '@oppulence/reacher-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);
@@ -237,7 +237,7 @@ import {
     DefaultApi,
     Configuration,
     CheckEmailRequest
-} from '@oppulence-engineering/reacher-sdk';
+} from '@oppulence/reacher-sdk';
 
 const configuration = new Configuration();
 const apiInstance = new DefaultApi(configuration);

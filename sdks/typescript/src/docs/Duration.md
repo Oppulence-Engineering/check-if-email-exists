@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Duration } from '@oppulence-engineering/reacher-sdk';
+import { Duration } from '@oppulence/reacher-sdk';
 
 const instance: Duration = {
     secs,

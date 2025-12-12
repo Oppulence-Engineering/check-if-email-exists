@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { PostV1BulkRequest } from '@oppulence-engineering/reacher-sdk';
+import { PostV1BulkRequest } from '@oppulence/reacher-sdk';
 
 const instance: PostV1BulkRequest = {
     input,

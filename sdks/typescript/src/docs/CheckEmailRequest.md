@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { CheckEmailRequest } from '@oppulence-engineering/reacher-sdk';
+import { CheckEmailRequest } from '@oppulence/reacher-sdk';
 
 const instance: CheckEmailRequest = {
     from_email,

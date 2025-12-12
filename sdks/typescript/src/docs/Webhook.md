@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { Webhook } from '@oppulence-engineering/reacher-sdk';
+import { Webhook } from '@oppulence/reacher-sdk';
 
 const instance: Webhook = {
     url,

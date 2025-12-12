@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { CheckEmailInputProxy } from '@oppulence-engineering/reacher-sdk';
+import { CheckEmailInputProxy } from '@oppulence/reacher-sdk';
 
 const instance: CheckEmailInputProxy = {
     host,

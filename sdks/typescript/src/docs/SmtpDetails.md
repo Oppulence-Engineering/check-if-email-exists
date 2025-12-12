@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { SmtpDetails } from '@oppulence-engineering/reacher-sdk';
+import { SmtpDetails } from '@oppulence/reacher-sdk';
 
 const instance: SmtpDetails = {
     can_connect_smtp,

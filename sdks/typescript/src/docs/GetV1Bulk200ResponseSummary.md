@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { GetV1Bulk200ResponseSummary } from '@oppulence-engineering/reacher-sdk';
+import { GetV1Bulk200ResponseSummary } from '@oppulence/reacher-sdk';
 
 const instance: GetV1Bulk200ResponseSummary = {
     total_safe,

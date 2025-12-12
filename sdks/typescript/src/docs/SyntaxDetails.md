@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { SyntaxDetails } from '@oppulence-engineering/reacher-sdk';
+import { SyntaxDetails } from '@oppulence/reacher-sdk';
 
 const instance: SyntaxDetails = {
     domain,

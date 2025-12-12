@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { CheckEmailOutputMisc } from '@oppulence-engineering/reacher-sdk';
+import { CheckEmailOutputMisc } from '@oppulence/reacher-sdk';
 
 const instance: CheckEmailOutputMisc = {
     is_disposable,

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { DebugDetails } from '@oppulence-engineering/reacher-sdk';
+import { DebugDetails } from '@oppulence/reacher-sdk';
 
 const instance: DebugDetails = {
     start_time,

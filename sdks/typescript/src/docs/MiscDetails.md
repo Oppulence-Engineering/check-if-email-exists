@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { MiscDetails } from '@oppulence-engineering/reacher-sdk';
+import { MiscDetails } from '@oppulence/reacher-sdk';
 
 const instance: MiscDetails = {
     is_disposable,

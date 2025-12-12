@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { VerifMethod } from '@oppulence-engineering/reacher-sdk';
+import { VerifMethod } from '@oppulence/reacher-sdk';
 
 const instance: VerifMethod = {
     type,

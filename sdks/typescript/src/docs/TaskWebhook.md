@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ## Example
 
 ```typescript
-import { TaskWebhook } from '@oppulence-engineering/reacher-sdk';
+import { TaskWebhook } from '@oppulence/reacher-sdk';
 
 const instance: TaskWebhook = {
     on_each_email,
