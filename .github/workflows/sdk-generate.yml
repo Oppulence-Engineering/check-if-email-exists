@@ -5,18 +5,10 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
-      publish:
-        description: 'Publish SDKs to package registries'
-        type: boolean
-        default: false
-      version_bump:
-        description: 'Version bump type (patch, minor, major)'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-        default: patch
+      version:
+        description: 'Version to publish (e.g., 3.0.3) - must match a release tag'
+        type: string
+        required: true
 
 env:
   OPENAPI_GENERATOR_VERSION: '7.14.0'
@@ -113,59 +105,17 @@ jobs:
           name: golang-sdk
           path: sdks/golang/
 
-  # Commit generated SDKs back to repository
-  commit-sdks:
-    runs-on: ubuntu-latest
-    needs: [generate-typescript, generate-golang]
-    if: github.event_name == 'release'
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Download TypeScript SDK
-        uses: actions/download-artifact@v4
-        with:
-          name: typescript-sdk
-          path: sdks/typescript/
-
-      - name: Download Go SDK
-        uses: actions/download-artifact@v4
-        with:
-          name: golang-sdk
-          path: sdks/golang/
-
-      - name: Commit SDK changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sdks/
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: regenerate SDKs from openapi.json
-
-            Automatically generated from OpenAPI specification changes.
-
-            Generated with GitHub Actions"
-            git push
-          fi
-
-  # Publish TypeScript SDK to npm
+  # Publish TypeScript SDK to npm (uses unified release version)
   publish-typescript:
     runs-on: ubuntu-latest
     needs: [generate-typescript, generate-golang]
-    if: github.event_name == 'release' || github.event.inputs.publish == 'true'
     permissions:
       contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master  # Get the latest with SDK changes
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -173,26 +123,22 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Get release version
-        id: release_version
+      - name: Get unified release version
+        id: version
         run: |
           if [ "${{ github.event_name }}" == "release" ]; then
-            # Extract version from release tag (e.g., v1.2.3 -> 1.2.3)
             VERSION="${{ github.event.release.tag_name }}"
-            VERSION="${VERSION#v}"
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
           else
-            # Manual workflow dispatch - bump based on input
-            cd sdks/typescript
-            npm version ${{ github.event.inputs.version_bump }} --no-git-tag-version
-            VERSION=$(node -p "require('./package.json').version")
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            VERSION="${{ github.event.inputs.version }}"
           fi
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Update SDK version
+      - name: Update SDK version to match release
         working-directory: sdks/typescript
         run: |
-          npm version ${{ steps.release_version.outputs.version }} --no-git-tag-version --allow-same-version
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version --allow-same-version
 
       - name: Install and build
         working-directory: sdks/typescript
@@ -206,60 +152,35 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
 
-      - name: Commit version bump
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add sdks/typescript/package.json
-          git commit -m "chore(sdk): bump typescript SDK to v${{ steps.release_version.outputs.version }}" || true
-          git tag "sdk-typescript-v${{ steps.release_version.outputs.version }}" || true
-          git push || true
-          git push --tags || true
-
-  # Tag Go SDK for pkg.go.dev availability
+  # Tag Go SDK for pkg.go.dev (uses unified release version)
   tag-golang:
     runs-on: ubuntu-latest
     needs: [generate-typescript, generate-golang]
-    if: github.event_name == 'release' || github.event.inputs.publish == 'true'
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          fetch-depth: 0
 
-      - name: Get release version
+      - name: Get unified release version
         id: version
         run: |
           if [ "${{ github.event_name }}" == "release" ]; then
-            # Use the release tag version
             VERSION="${{ github.event.release.tag_name }}"
-            # Ensure it starts with 'v'
-            if [[ ! "$VERSION" == v* ]]; then
-              VERSION="v$VERSION"
-            fi
-            echo "version=$VERSION" >> $GITHUB_OUTPUT
           else
-            # Manual workflow dispatch - bump based on input
-            BUMP_TYPE="${{ github.event.inputs.version_bump }}"
-            CURRENT=$(git tag -l "sdks/golang/v*" | sort -V | tail -n1 | sed 's|sdks/golang/||' || echo "v0.0.0")
-            if [ -z "$CURRENT" ]; then
-              CURRENT="v0.0.0"
-            fi
-            MAJOR=$(echo $CURRENT | cut -d. -f1 | tr -d 'v')
-            MINOR=$(echo $CURRENT | cut -d. -f2)
-            PATCH=$(echo $CURRENT | cut -d. -f3)
-            case $BUMP_TYPE in
-              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
-              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
-              patch) PATCH=$((PATCH + 1)) ;;
-            esac
-            echo "version=v${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_OUTPUT
+            VERSION="${{ github.event.inputs.version }}"
           fi
+          # Ensure it starts with 'v'
+          if [[ ! "$VERSION" == v* ]]; then
+            VERSION="v$VERSION"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Go module tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Tag for Go modules (sdks/golang/vX.Y.Z format required for submodules)
           git tag "sdks/golang/${{ steps.version.outputs.version }}" || true
           git push --tags || true

@@ -1,8 +1,8 @@
 {
-  "core": "3.0.0",
-  "cli": "3.0.0",
-  "backend": "3.0.1",
-  "sqs": "3.0.1",
+  "core": "3.0.2",
+  "cli": "3.0.2",
+  "backend": "3.0.2",
+  "sqs": "3.0.2",
   "sdks/typescript": "3.0.2",
   "sdks/golang": "3.0.2"
 }
