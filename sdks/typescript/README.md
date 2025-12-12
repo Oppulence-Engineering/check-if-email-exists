@@ -1,6 +1,6 @@
 # @oppulence-engineering/reacher-sdk
 
-Official TypeScript SDK for the Reacher Email Verification API.
+Official TypeScript SDK for the Reacher Email Verification API. Auto-generated from the OpenAPI specification.
 
 ## Installation
 
