@@ -72,7 +72,7 @@ update-free-email-providers:
 # SDK Generation
 ###############################################################################
 
-OPENAPI_GENERATOR_VERSION ?= 7.10.0
+OPENAPI_GENERATOR_VERSION ?= 7.14.0
 OPENAPI_SPEC := $(CURDIR)/backend/openapi.json
 SDK_DIR := $(CURDIR)/sdks
 
