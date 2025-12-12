@@ -13,8 +13,8 @@ package reacher
 
 import (
 	"encoding/json"
-	"gopkg.in/validator.v2"
 	"fmt"
+	"gopkg.in/validator.v2"
 )
 
 // CheckEmailOutputMisc - Additional information about the email account.
@@ -113,6 +113,20 @@ func (obj *CheckEmailOutputMisc) GetActualInstance() (interface{}) {
 
 	if obj.MiscDetails != nil {
 		return obj.MiscDetails
+	}
+
+	// all schemas are nil
+	return nil
+}
+
+// Get the actual instance value
+func (obj CheckEmailOutputMisc) GetActualInstanceValue() (interface{}) {
+	if obj.CoreError != nil {
+		return *obj.CoreError
+	}
+
+	if obj.MiscDetails != nil {
+		return *obj.MiscDetails
 	}
 
 	// all schemas are nil

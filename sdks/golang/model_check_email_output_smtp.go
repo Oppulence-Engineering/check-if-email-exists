@@ -13,8 +13,8 @@ package reacher
 
 import (
 	"encoding/json"
-	"gopkg.in/validator.v2"
 	"fmt"
+	"gopkg.in/validator.v2"
 )
 
 // CheckEmailOutputSmtp - Results from connecting to the mail server via SMTP.
@@ -113,6 +113,20 @@ func (obj *CheckEmailOutputSmtp) GetActualInstance() (interface{}) {
 
 	if obj.SmtpDetails != nil {
 		return obj.SmtpDetails
+	}
+
+	// all schemas are nil
+	return nil
+}
+
+// Get the actual instance value
+func (obj CheckEmailOutputSmtp) GetActualInstanceValue() (interface{}) {
+	if obj.CoreError != nil {
+		return *obj.CoreError
+	}
+
+	if obj.SmtpDetails != nil {
+		return *obj.SmtpDetails
 	}
 
 	// all schemas are nil

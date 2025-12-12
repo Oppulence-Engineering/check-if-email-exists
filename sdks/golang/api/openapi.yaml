@@ -33,7 +33,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CheckEmailRequest'
+              $ref: "#/components/schemas/CheckEmailRequest"
         description: Request object containing all parameters necessary for an email
           verification.
       responses:
@@ -41,7 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CheckEmailOutput'
+                $ref: "#/components/schemas/CheckEmailOutput"
           description: OK
       summary: /v1/check_email
       x-stoplight:
@@ -54,13 +54,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/post_v1_bulk_request'
+              $ref: "#/components/schemas/post_v1_bulk_request"
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/post_v1_bulk_200_response'
+                $ref: "#/components/schemas/post_v1_bulk_200_response"
           description: OK
       summary: /v1/bulk
       x-stoplight:
@@ -83,7 +83,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/get_v1_bulk_200_response'
+                $ref: "#/components/schemas/get_v1_bulk_200_response"
           description: OK
       summary: "/v1/bulk/{job_id}"
       x-stoplight:
@@ -126,7 +126,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/get_v1_bulk_results_200_response'
+                $ref: "#/components/schemas/get_v1_bulk_results_200_response"
           description: OK
       summary: Retrieve bulk verification results
       x-stoplight:
@@ -156,7 +156,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CheckEmailRequest'
+              $ref: "#/components/schemas/CheckEmailRequest"
         description: Request object containing all parameters necessary for an email
           verification.
       responses:
@@ -165,7 +165,7 @@ paths:
             application/json:
               examples: {}
               schema:
-                $ref: '#/components/schemas/CheckEmailOutput'
+                $ref: "#/components/schemas/CheckEmailOutput"
           description: OK
       summary: /v0/check_email
       x-stoplight:
@@ -202,19 +202,19 @@ components:
           description: "In the SMTP connection, the EHLO hostname."
           type: string
         proxy:
-          $ref: '#/components/schemas/CheckEmailInputProxy'
+          $ref: "#/components/schemas/CheckEmailInputProxy"
         smtp_port:
           description: "SMTP port to use for email validation. Defaults to 25, but\
             \ 465, 587, and 2525 are sometimes also used."
           type: number
         gmail_verif_method:
-          $ref: '#/components/schemas/GmailVerifMethod'
+          $ref: "#/components/schemas/GmailVerifMethod"
         hotmailb2b_verif_method:
-          $ref: '#/components/schemas/HotmailB2BVerifMethod'
+          $ref: "#/components/schemas/HotmailB2BVerifMethod"
         hotmailb2c_verif_method:
-          $ref: '#/components/schemas/HotmailB2CVerifMethod'
+          $ref: "#/components/schemas/HotmailB2CVerifMethod"
         yahoo_verif_method:
-          $ref: '#/components/schemas/YahooVerifMethod'
+          $ref: "#/components/schemas/YahooVerifMethod"
         check_gravatar:
           description: Whether to check if a Gravatar image exists for the given email.
           type: boolean
@@ -265,17 +265,17 @@ components:
           format: email
           type: string
         is_reachable:
-          $ref: '#/components/schemas/Reachable'
+          $ref: "#/components/schemas/Reachable"
         misc:
-          $ref: '#/components/schemas/CheckEmailOutput_misc'
+          $ref: "#/components/schemas/CheckEmailOutput_misc"
         mx:
-          $ref: '#/components/schemas/CheckEmailOutput_mx'
+          $ref: "#/components/schemas/CheckEmailOutput_mx"
         smtp:
-          $ref: '#/components/schemas/CheckEmailOutput_smtp'
+          $ref: "#/components/schemas/CheckEmailOutput_smtp"
         syntax:
-          $ref: '#/components/schemas/SyntaxDetails'
+          $ref: "#/components/schemas/SyntaxDetails"
         debug:
-          $ref: '#/components/schemas/DebugDetails'
+          $ref: "#/components/schemas/DebugDetails"
       required:
       - input
       - is_reachable
@@ -529,14 +529,14 @@ components:
           x-stoplight:
             id: zw4ccbvwsoh6q
         duration:
-          $ref: '#/components/schemas/Duration'
+          $ref: "#/components/schemas/Duration"
         server_name:
           description: The name of the server that performed the verification.
           type: string
           x-stoplight:
             id: 2jrbdecvqh4t5
         smtp:
-          $ref: '#/components/schemas/DebugDetailsSmtp'
+          $ref: "#/components/schemas/DebugDetailsSmtp"
       required:
       - duration
       - end_time
@@ -573,7 +573,7 @@ components:
           type: Smtp
       properties:
         verif_method:
-          $ref: '#/components/schemas/VerifMethod'
+          $ref: "#/components/schemas/VerifMethod"
       title: DebugDetailsSmtp
       type: object
       x-stoplight:
@@ -604,7 +604,7 @@ components:
         during bulk verification.
       properties:
         on_each_email:
-          $ref: '#/components/schemas/Webhook'
+          $ref: "#/components/schemas/Webhook"
       title: TaskWebhook
       type: object
       x-stoplight:
@@ -641,7 +641,7 @@ components:
           x-stoplight:
             id: fsitj4yhkzk8e
         webhook:
-          $ref: '#/components/schemas/TaskWebhook'
+          $ref: "#/components/schemas/TaskWebhook"
       required:
       - input
       type: object
@@ -737,7 +737,7 @@ components:
           x-stoplight:
             id: oqxvsorhd06ch
         summary:
-          $ref: '#/components/schemas/get_v1_bulk_200_response_summary'
+          $ref: "#/components/schemas/get_v1_bulk_200_response_summary"
         job_status:
           description: "The status of the job, either \"Running\" or \"Completed\"\
             ."
@@ -792,25 +792,25 @@ components:
             is_disposable: true
       properties:
         results:
-          $ref: '#/components/schemas/CheckEmailOutput'
+          $ref: "#/components/schemas/CheckEmailOutput"
       required:
       - results
       type: object
     CheckEmailOutput_misc:
       description: Additional information about the email account.
       oneOf:
-      - $ref: '#/components/schemas/MiscDetails'
-      - $ref: '#/components/schemas/CoreError'
+      - $ref: "#/components/schemas/MiscDetails"
+      - $ref: "#/components/schemas/CoreError"
     CheckEmailOutput_mx:
       description: Details obtained from querying the mail server's MX records.
       oneOf:
-      - $ref: '#/components/schemas/MxDetails'
-      - $ref: '#/components/schemas/CoreError'
+      - $ref: "#/components/schemas/MxDetails"
+      - $ref: "#/components/schemas/CoreError"
     CheckEmailOutput_smtp:
       description: Results from connecting to the mail server via SMTP.
       oneOf:
-      - $ref: '#/components/schemas/SmtpDetails'
-      - $ref: '#/components/schemas/CoreError'
+      - $ref: "#/components/schemas/SmtpDetails"
+      - $ref: "#/components/schemas/CoreError"
   securitySchemes:
     Authorization:
       description: A Reacher API key is required for all requests. Sign up on https://reacher.email

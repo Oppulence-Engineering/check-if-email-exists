@@ -13,8 +13,8 @@ package reacher
 
 import (
 	"encoding/json"
-	"gopkg.in/validator.v2"
 	"fmt"
+	"gopkg.in/validator.v2"
 )
 
 // CheckEmailOutputMx - Details obtained from querying the mail server's MX records.
@@ -113,6 +113,20 @@ func (obj *CheckEmailOutputMx) GetActualInstance() (interface{}) {
 
 	if obj.MxDetails != nil {
 		return obj.MxDetails
+	}
+
+	// all schemas are nil
+	return nil
+}
+
+// Get the actual instance value
+func (obj CheckEmailOutputMx) GetActualInstanceValue() (interface{}) {
+	if obj.CoreError != nil {
+		return *obj.CoreError
+	}
+
+	if obj.MxDetails != nil {
+		return *obj.MxDetails
 	}
 
 	// all schemas are nil
