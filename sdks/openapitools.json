@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenAPITools/openapi-generator-cli/master/apps/generator-cli/src/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.14.0",
+    "generators": {
+      "typescript": {
+        "generatorName": "typescript-axios",
+        "output": "#{cwd}/sdks/typescript/src",
+        "inputSpec": "#{cwd}/backend/openapi.json",
+        "additionalProperties": {
+          "npmName": "@oppulence/reacher-sdk",
+          "npmVersion": "3.0.1",
+          "supportsES6": "true",
+          "withInterfaces": "true",
+          "withSeparateModelsAndApi": "true",
+          "apiPackage": "api",
+          "modelPackage": "models",
+          "useSingleRequestParameter": "true",
+          "enumPropertyNaming": "UPPERCASE"
+        }
+      },
+      "golang": {
+        "generatorName": "go",
+        "output": "#{cwd}/sdks/golang",
+        "inputSpec": "#{cwd}/backend/openapi.json",
+        "additionalProperties": {
+          "packageName": "reacher",
+          "packageVersion": "3.0.1",
+          "isGoSubmodule": "true",
+          "generateInterfaces": "true",
+          "structPrefix": "true",
+          "enumClassPrefix": "true"
+        }
+      }
+    }
+  }
+}

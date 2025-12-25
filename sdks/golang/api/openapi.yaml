@@ -1,0 +1,820 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: amaury@reacher.email
+    name: Reacher
+    url: https://reacher.email
+  description: |-
+    ### What is Reacher?
+
+    Reacher is a robust, open-source email verification API service available as both a SaaS and self-hosted solution.
+  license:
+    name: AGPL-3.0 OR Commercial
+    url: https://github.com/reacherhq/check-if-email-exists/blob/master/LICENSE.md
+  termsOfService: https://github.com/reacherhq/policies/blob/master/terms/index.fr.md
+  title: Reacher
+  version: 0.11.0
+servers:
+- description: Reacher Production
+  url: https://api.reacher.email
+security:
+- Authorization: []
+paths:
+  /v1/check_email:
+    post:
+      description: "Perform a comprehensive verification of an email address. This\
+        \ endpoint supersedes the previous `/v0/check_email` endpoint, maintaining\
+        \ the same input and output format. Unlike the `/v0/check_email` endpoint,\
+        \ the new `/v1/check_email` endpoint queues the email for verification, and\
+        \ the Reacher server processes the queue based on its configuration settings\
+        \ such as throttle and concurrency."
+      operationId: post-v1-check-email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckEmailRequest"
+        description: Request object containing all parameters necessary for an email
+          verification.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckEmailOutput"
+          description: OK
+      summary: /v1/check_email
+      x-stoplight:
+        id: yho6jrv7p04qv
+  /v1/bulk:
+    post:
+      description: Initiate a bulk email verification.
+      operationId: post-v1-bulk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/post_v1_bulk_request"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/post_v1_bulk_200_response"
+          description: OK
+      summary: /v1/bulk
+      x-stoplight:
+        id: jpoyy08arq31b
+  /v1/bulk/{job_id}:
+    get:
+      description: Retrieve the progress of a bulk verification job.
+      operationId: get-v1-bulk
+      parameters:
+      - description: The unique bulk verification job ID
+        explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/get_v1_bulk_200_response"
+          description: OK
+      summary: "/v1/bulk/{job_id}"
+      x-stoplight:
+        id: phrhxrak01ja6
+  /v1/bulk/{job_id}/results:
+    get:
+      description: "Retrieve the results of a bulk verification job. This endpoint\
+        \ will return an error if the job is still running. Please query `GET /v1/bulk/{job_id}`\
+        \ first to check the job's progress."
+      operationId: get-v1-bulk-results
+      parameters:
+      - description: The unique bulk verification job ID
+        explode: false
+        in: path
+        name: job_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The number of results to return.
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 50
+          type: integer
+        style: form
+      - description: "The offset from which to return the results, equivalent to the\
+          \ number of elements in the array to skip."
+        explode: true
+        in: query
+        name: offset
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/get_v1_bulk_results_200_response"
+          description: OK
+      summary: Retrieve bulk verification results
+      x-stoplight:
+        id: skx9nlfib3but
+  /v0/check_email:
+    post:
+      deprecated: true
+      description: "**Sunset notice: please use `/v1/check_email` instead.** Both\
+        \ endpoints accept the same input arguments and return the same output; only\
+        \ their internal implementation differs. Perform a comprehensive verification\
+        \ of an email address. Unlike the `/v1/check_email` endpoint, this endpoint\
+        \ performs an email verification immediately, without considering the Reacher\
+        \ server's throttling, concurrency, and other configurations. As such, this\
+        \ endpoint is slightly riskier than `/v1/check_email`, as the Reacher server's\
+        \ IP reputation can be impacted if this endpoint is called too frequently."
+      operationId: post-v0-check-email
+      parameters:
+      - description: Your personal Reacher API key
+        explode: false
+        in: header
+        name: Authorization
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckEmailRequest"
+        description: Request object containing all parameters necessary for an email
+          verification.
+      responses:
+        "200":
+          content:
+            application/json:
+              examples: {}
+              schema:
+                $ref: "#/components/schemas/CheckEmailOutput"
+          description: OK
+      summary: /v0/check_email
+      x-stoplight:
+        id: 9cw3vilj3q88h
+components:
+  requestBodies: {}
+  schemas:
+    CheckEmailRequest:
+      description: "A request object to perform an email verification. The `to_email`\
+        \ field is required, all other fields are optional."
+      example:
+        proxy:
+          password: password
+          port: 0
+          host: host
+          username: username
+        hotmailb2b_verif_method: Smtp
+        to_email: to_email
+        from_email: from_email
+        smtp_port: 6.027456183070403
+        hello_name: hello_name
+        gmail_verif_method: Smtp
+        check_gravatar: true
+        hotmailb2c_verif_method: Smtp
+        yahoo_verif_method: Api
+      properties:
+        from_email:
+          description: "In the SMTP connection, the FROM email address."
+          type: string
+        to_email:
+          description: The email address to check.
+          type: string
+        hello_name:
+          description: "In the SMTP connection, the EHLO hostname."
+          type: string
+        proxy:
+          $ref: "#/components/schemas/CheckEmailInputProxy"
+        smtp_port:
+          description: "SMTP port to use for email validation. Defaults to 25, but\
+            \ 465, 587, and 2525 are sometimes also used."
+          type: number
+        gmail_verif_method:
+          $ref: "#/components/schemas/GmailVerifMethod"
+        hotmailb2b_verif_method:
+          $ref: "#/components/schemas/HotmailB2BVerifMethod"
+        hotmailb2c_verif_method:
+          $ref: "#/components/schemas/HotmailB2CVerifMethod"
+        yahoo_verif_method:
+          $ref: "#/components/schemas/YahooVerifMethod"
+        check_gravatar:
+          description: Whether to check if a Gravatar image exists for the given email.
+          type: boolean
+      required:
+      - to_email
+      title: CheckEmailRequest
+      type: object
+      x-stoplight:
+        id: 834398a8ce480
+    CheckEmailOutput:
+      description: The result of the email verification process.
+      example:
+        input: input
+        smtp:
+          is_catch_all: true
+          can_connect_smtp: true
+          has_full_inbox: true
+          is_disabled: true
+          is_deliverable: true
+        debug:
+          duration:
+            nanos: 6.027456183070403
+            secs: 0.8008281904610115
+          start_time: start_time
+          server_name: server_name
+          smtp:
+            verif_method:
+              type: Smtp
+          end_time: end_time
+        is_reachable: invalid
+        syntax:
+          domain: domain
+          is_valid_syntax: true
+          username: username
+        mx:
+          accepts_mail: true
+          records:
+          - records
+          - records
+        misc:
+          is_b2c: true
+          is_role_account: true
+          gravatar_url: gravatar_url
+          is_disposable: true
+      properties:
+        input:
+          description: The email address that was verified.
+          format: email
+          type: string
+        is_reachable:
+          $ref: "#/components/schemas/Reachable"
+        misc:
+          $ref: "#/components/schemas/CheckEmailOutput_misc"
+        mx:
+          $ref: "#/components/schemas/CheckEmailOutput_mx"
+        smtp:
+          $ref: "#/components/schemas/CheckEmailOutput_smtp"
+        syntax:
+          $ref: "#/components/schemas/SyntaxDetails"
+        debug:
+          $ref: "#/components/schemas/DebugDetails"
+      required:
+      - input
+      - is_reachable
+      - misc
+      - mx
+      - smtp
+      - syntax
+      title: CheckEmailOutput
+      type: object
+      x-examples:
+        Example with test@gmail.com:
+          input: test@gmail.com
+          is_reachable: invalid
+          misc:
+            is_disposable: false
+            is_role_account: true
+          mx:
+            accepts_mail: true
+            records:
+            - alt4.gmail-smtp-in.l.google.com.
+            - alt2.gmail-smtp-in.l.google.com.
+            - alt3.gmail-smtp-in.l.google.com.
+            - gmail-smtp-in.l.google.com.
+            - alt1.gmail-smtp-in.l.google.com.
+          smtp:
+            can_connect_smtp: true
+            has_full_inbox: false
+            is_catch_all: false
+            is_deliverable: false
+            is_disabled: false
+          syntax:
+            domain: gmail.com
+            is_valid_syntax: true
+            username: test
+    Reachable:
+      description: "An enumeration describing the confidence level that the recipient\
+        \ address is valid: `safe`, `risky`, `invalid`, or `unknown`. Refer to our\
+        \ FAQ for detailed definitions: https://help.reacher.email/email-attributes-inside-json."
+      enum:
+      - invalid
+      - unknown
+      - safe
+      - risky
+      title: Reachable
+      type: string
+    MiscDetails:
+      description: Additional information about the email account.
+      example:
+        is_b2c: true
+        is_role_account: true
+        gravatar_url: gravatar_url
+        is_disposable: true
+      properties:
+        is_disposable:
+          description: Indicates if the email address is from a known disposable email
+            provider.
+          type: boolean
+        is_role_account:
+          description: Indicates if the email address is a role-based account.
+          type: boolean
+        gravatar_url:
+          description: "URL to the Gravatar profile picture associated with the email,\
+            \ if available and requested."
+          type: string
+        is_b2c:
+          description: Is this a B2C email address?
+          type: boolean
+          x-stoplight:
+            id: 0cxn26qlxy8r4
+      required:
+      - is_b2c
+      - is_disposable
+      - is_role_account
+      title: MiscDetails
+      type: object
+    MxDetails:
+      description: Details about the mail server's MX records.
+      example:
+        accepts_mail: true
+        records:
+        - records
+        - records
+      properties:
+        accepts_mail:
+          description: Indicates if the mail server accepts emails.
+          type: boolean
+        records:
+          description: List of Fully Qualified Domain Names (FQDN) of the mail server.
+          items:
+            type: string
+          type: array
+      required:
+      - accepts_mail
+      - records
+      title: MxDetails
+      type: object
+    SmtpDetails:
+      description: Results from SMTP connection attempts to the mail server.
+      example:
+        is_catch_all: true
+        can_connect_smtp: true
+        has_full_inbox: true
+        is_disabled: true
+        is_deliverable: true
+      properties:
+        can_connect_smtp:
+          description: Indicates if the mail exchanger can be contacted successfully.
+          type: boolean
+        has_full_inbox:
+          description: Indicates if the mailbox is full.
+          type: boolean
+        is_catch_all:
+          description: Indicates if the email address is a catch-all address.
+          type: boolean
+        is_deliverable:
+          description: Indicates if an email sent to this address is deliverable.
+          type: boolean
+        is_disabled:
+          description: Indicates if the email address has been disabled by the provider.
+          type: boolean
+      required:
+      - can_connect_smtp
+      - has_full_inbox
+      - is_catch_all
+      - is_deliverable
+      - is_disabled
+      title: SmtpDetails
+      type: object
+    SyntaxDetails:
+      description: Validation of the email address syntax.
+      example:
+        domain: domain
+        is_valid_syntax: true
+        username: username
+      properties:
+        domain:
+          description: The domain part of the email address.
+          type: string
+        is_valid_syntax:
+          description: Indicates if the email address syntax is valid.
+          type: boolean
+        username:
+          description: The username part of the email address.
+          type: string
+      required:
+      - domain
+      - is_valid_syntax
+      - username
+      title: SyntaxDetails
+      type: object
+    CoreError:
+      description: Details of an error encountered during the verification process.
+      properties:
+        type:
+          description: The type of error.
+          type: string
+        message:
+          description: A human-readable description of the error.
+          type: string
+      required:
+      - message
+      - type
+      title: CoreError
+      type: object
+      x-stoplight:
+        id: a872ead6474cd
+    YahooVerifMethod:
+      description: Enumeration describing the method used to verify Yahoo emails.
+      enum:
+      - Api
+      - Headless
+      - Smtp
+      title: YahooVerifMethod
+      type: string
+    HotmailB2BVerifMethod:
+      description: Enumeration describing the method used to verify Hotmail B2B emails.
+      enum:
+      - Smtp
+      title: HotmailB2BVerifMethod
+      type: string
+      x-stoplight:
+        id: ntdugsleyotut
+    HotmailB2CVerifMethod:
+      description: Enumeration describing the method used to verify Hotmail B2C emails.
+      enum:
+      - Smtp
+      - Headless
+      title: HotmailB2CVerifMethod
+      type: string
+      x-stoplight:
+        id: cuc5bj6ra2t0i
+    GmailVerifMethod:
+      description: Enumeration describing the method used to verify Gmail emails.
+      enum:
+      - Smtp
+      title: GmailVerifMethod
+      type: string
+      x-stoplight:
+        id: xo5r48yhtxiwr
+      x-internal: false
+    CheckEmailInputProxy:
+      description: Proxy configuration for email verification.
+      example:
+        password: password
+        port: 0
+        host: host
+        username: username
+      properties:
+        host:
+          description: The proxy host address.
+          type: string
+        port:
+          description: The proxy port number.
+          type: integer
+        username:
+          description: Username for proxy authentication.
+          type: string
+        password:
+          description: Password for proxy authentication.
+          type: string
+      required:
+      - host
+      - port
+      title: CheckEmailInputProxy
+      type: object
+      x-examples:
+        example-1:
+          value:
+            host: my-proxy.io
+            port: 1080
+    DebugDetails:
+      example:
+        duration:
+          nanos: 6.027456183070403
+          secs: 0.8008281904610115
+        start_time: start_time
+        server_name: server_name
+        smtp:
+          verif_method:
+            type: Smtp
+        end_time: end_time
+      properties:
+        start_time:
+          description: The timestamp when the email verification started.
+          type: string
+          x-stoplight:
+            id: 60i65k60m8e8d
+        end_time:
+          description: The timestamp when the email verification ended.
+          type: string
+          x-stoplight:
+            id: zw4ccbvwsoh6q
+        duration:
+          $ref: "#/components/schemas/Duration"
+        server_name:
+          description: The name of the server that performed the verification.
+          type: string
+          x-stoplight:
+            id: 2jrbdecvqh4t5
+        smtp:
+          $ref: "#/components/schemas/DebugDetailsSmtp"
+      required:
+      - duration
+      - end_time
+      - server_name
+      - smtp
+      - start_time
+      title: DebugDetails
+      type: object
+      x-stoplight:
+        id: 4wxlk39h8v9kz
+    Duration:
+      description: An object representing a duration in seconds and nanoseconds.
+      example:
+        nanos: 6.027456183070403
+        secs: 0.8008281904610115
+      properties:
+        secs:
+          description: Duration in seconds.
+          type: number
+        nanos:
+          description: Duration in nanoseconds.
+          type: number
+      required:
+      - nanos
+      - secs
+      title: Duration
+      type: object
+      x-stoplight:
+        id: bg9y0iez4zati
+    DebugDetailsSmtp:
+      description: "SMTP details used for debugging, including the verification method."
+      example:
+        verif_method:
+          type: Smtp
+      properties:
+        verif_method:
+          $ref: "#/components/schemas/VerifMethod"
+      title: DebugDetailsSmtp
+      type: object
+      x-stoplight:
+        id: 2a90bzapppo0j
+    VerifMethod:
+      description: The method used for email verification.
+      example:
+        type: Smtp
+      properties:
+        type:
+          description: The method used for the email verification.
+          enum:
+          - Smtp
+          - Headless
+          - Api
+          - Skipped
+          type: string
+          x-stoplight:
+            id: 4ogsz639tcdb6
+      required:
+      - type
+      title: VerifMethod
+      type: object
+      x-stoplight:
+        id: 9xw9e1jwti230
+    TaskWebhook:
+      description: Optional webhook configuration for sending email verification results
+        during bulk verification.
+      properties:
+        on_each_email:
+          $ref: "#/components/schemas/Webhook"
+      title: TaskWebhook
+      type: object
+      x-stoplight:
+        id: 6053d3ngu2hfn
+    Webhook:
+      description: "Configuration for a webhook to receive email verification results.\
+        \ The method will be POST, and the body will contain the email verification\
+        \ response."
+      properties:
+        url:
+          description: The URL to send the email verification results to.
+          type: string
+          x-stoplight:
+            id: iraaa1ism4bzi
+        extra:
+          type: object
+          x-stoplight:
+            id: f20boz81d2fei
+      required:
+      - url
+      title: Webhook
+      type: object
+      x-stoplight:
+        id: p9emghvcb92fj
+    post_v1_bulk_request:
+      properties:
+        input:
+          description: A list of emails to verify.
+          items:
+            type: string
+            x-stoplight:
+              id: kgcb3i4u5sfgr
+          type: array
+          x-stoplight:
+            id: fsitj4yhkzk8e
+        webhook:
+          $ref: "#/components/schemas/TaskWebhook"
+      required:
+      - input
+      type: object
+    post_v1_bulk_200_response:
+      example:
+        job_id: 0
+      properties:
+        job_id:
+          description: The unique ID generated for this bulk verification job. Use
+            this `job_id` to query the progress or results of the bulk verification.
+          type: integer
+          x-stoplight:
+            id: 614agdy9mxybk
+      required:
+      - job_id
+      type: object
+    get_v1_bulk_200_response_summary:
+      description: A summary of the processed emails.
+      example:
+        total_unknown: 7
+        total_invalid: 5
+        total_safe: 5
+        total_risky: 2
+      properties:
+        total_safe:
+          description: The number of emails where `is_reachable` is "safe".
+          type: integer
+          x-stoplight:
+            id: 4nss0vedcrjc4
+        total_invalid:
+          description: The number of emails where `is_reachable` is "invalid".
+          type: integer
+          x-stoplight:
+            id: uzzk7ija2l5sv
+        total_risky:
+          description: The number of emails where `is_reachable` is "risky".
+          type: integer
+          x-stoplight:
+            id: sqjtoggge6us3
+        total_unknown:
+          description: The number of emails where `is_reachable` is "unknown".
+          type: integer
+          x-stoplight:
+            id: 8lsodukakqreu
+      required:
+      - total_invalid
+      - total_risky
+      - total_safe
+      - total_unknown
+      type: object
+      x-stoplight:
+        id: n5q382zces1lq
+    get_v1_bulk_200_response:
+      example:
+        summary:
+          total_unknown: 7
+          total_invalid: 5
+          total_safe: 5
+          total_risky: 2
+        job_status: Running
+        total_processed: 1
+        finished_at: 2000-01-23T04:56:07.000+00:00
+        job_id: 0
+        total_records: 6
+        created_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        job_id:
+          type: integer
+          x-stoplight:
+            id: 4f6vqudy7zank
+        created_at:
+          description: The date and time when the bulk verification job was created.
+          format: date-time
+          type: string
+          x-stoplight:
+            id: 7baymbmoaj5vo
+        finished_at:
+          description: "If the bulk verification job is completed, the date and time\
+            \ when it was finished."
+          format: date-time
+          type: string
+          x-stoplight:
+            id: 7lhzxsb1ixnvz
+        total_records:
+          description: The number of emails to verify in the bulk verification job.
+          type: integer
+          x-stoplight:
+            id: y8q2zhagq8zd6
+        total_processed:
+          description: The number of emails that have been verified at the time of
+            the query.
+          type: integer
+          x-stoplight:
+            id: oqxvsorhd06ch
+        summary:
+          $ref: "#/components/schemas/get_v1_bulk_200_response_summary"
+        job_status:
+          description: "The status of the job, either \"Running\" or \"Completed\"\
+            ."
+          enum:
+          - Running
+          - Completed
+          type: string
+          x-stoplight:
+            id: tsw5sp5cxe7ad
+      required:
+      - created_at
+      - job_id
+      - job_status
+      - summary
+      - total_processed
+      - total_records
+      type: object
+    get_v1_bulk_results_200_response:
+      example:
+        results:
+          input: input
+          smtp:
+            is_catch_all: true
+            can_connect_smtp: true
+            has_full_inbox: true
+            is_disabled: true
+            is_deliverable: true
+          debug:
+            duration:
+              nanos: 6.027456183070403
+              secs: 0.8008281904610115
+            start_time: start_time
+            server_name: server_name
+            smtp:
+              verif_method:
+                type: Smtp
+            end_time: end_time
+          is_reachable: invalid
+          syntax:
+            domain: domain
+            is_valid_syntax: true
+            username: username
+          mx:
+            accepts_mail: true
+            records:
+            - records
+            - records
+          misc:
+            is_b2c: true
+            is_role_account: true
+            gravatar_url: gravatar_url
+            is_disposable: true
+      properties:
+        results:
+          $ref: "#/components/schemas/CheckEmailOutput"
+      required:
+      - results
+      type: object
+    CheckEmailOutput_misc:
+      description: Additional information about the email account.
+      oneOf:
+      - $ref: "#/components/schemas/MiscDetails"
+      - $ref: "#/components/schemas/CoreError"
+    CheckEmailOutput_mx:
+      description: Details obtained from querying the mail server's MX records.
+      oneOf:
+      - $ref: "#/components/schemas/MxDetails"
+      - $ref: "#/components/schemas/CoreError"
+    CheckEmailOutput_smtp:
+      description: Results from connecting to the mail server via SMTP.
+      oneOf:
+      - $ref: "#/components/schemas/SmtpDetails"
+      - $ref: "#/components/schemas/CoreError"
+  securitySchemes:
+    Authorization:
+      description: A Reacher API key is required for all requests. Sign up on https://reacher.email
+        to get your personal API key.
+      in: header
+      name: Authorization
+      type: apiKey
